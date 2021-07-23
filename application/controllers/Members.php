@@ -15,17 +15,26 @@ class Members extends Admin_Controller
 		$this->load->model('model_groups');
 		$this->load->model('model_stores');
         $this->load->model('model_members');
+		$this->load->model('model_transactions');
+		$this->load->model('model_alphasavings');
+		$this->load->model('model_referrals');
+		$this->load->model('model_membership');
 	}
 	public function index(){
 		redirect('members/manage', 'refresh');
 	}
 
+
 	public function accountManagers(){
 		if(!in_array('viewUser', $this->permission)) {
             redirect('dashboard', 'refresh');
         }
-
-		$user_data = $this->model_members->getManagers();
+        
+		  if($this->uri->segment(3)==null){
+		$user_data = $this->model_members->getManagers(null);
+		  
+	
+		    
 
 		$result = array();
 		foreach ($user_data as $k => $v) {
@@ -43,10 +52,35 @@ class Members extends Admin_Controller
 	}
 
 	
+	if(!$this->uri->segment(3)==null){
+		$user_data = $this->model_members->getManagers($this->uri->segment(3));
+   		
+		$this->data['user_data'] = $user_data;
+        
+		     
+		      
+				if(!$user_data == null){
+				echo json_encode($user_data);
+
+				}
+
+				else
+				{
+				echo "Not found" ."  ".$user_data;
+
+				}
+
+	
+			}
+
+	}
+
 
 
 	public function manage()
 	{
+
+		
 		
 
 		if(!in_array('viewUser', $this->permission)) {
@@ -54,6 +88,9 @@ class Members extends Admin_Controller
         }
 
 		$account_location =  $this->uri->segment(3);
+ 
+		
+		
 
 		if($account_location){
 		
@@ -65,15 +102,24 @@ class Members extends Admin_Controller
 
 			$result[$k]['user_info'] = $v;
 
+			
+
 		//	$group = $this->model_users->getUserGroup($v['id']);
 		//	$result[$k]['user_group'] = $group;
 		}
+
+		
+	//	$getAccountManager = $this->model_members->getAccountManager($user_data["account_manager"]);
+
+	
+
 
 		$this->data['user_data'] = $result;
  
 		$this->render_template('members/index', $this->data);
 
      }
+
 
 	 else{
 		$user_data = $this->model_members->getUserData(null,null);
@@ -92,6 +138,9 @@ class Members extends Admin_Controller
 		$this->render_template('members/index', $this->data);
 	 }
 
+
+
+
 	}
 
 
@@ -105,7 +154,7 @@ class Members extends Admin_Controller
 
 		$this->form_validation->set_rules('groups', 'Group', 'required');
 		
-		$this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email|is_unique[users.email]');
+		$this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email');
 		$this->form_validation->set_rules('password', 'Password', 'trim|required|min_length[8]');
 		$this->form_validation->set_rules('fname', 'First name', 'trim|required');
         $this->form_validation->set_rules('lname', 'Last name', 'trim|required');
@@ -114,7 +163,7 @@ class Members extends Admin_Controller
         $this->form_validation->set_rules('aphone', 'Alt. Phone Number', 'trim|required');
         $this->form_validation->set_rules('date', 'Date of Birth', 'trim|required');
         $this->form_validation->set_rules('address', 'Address', 'trim|required|min_length[30]');
-        $this->form_validation->set_rules('bstop', 'Landmark', 'trim|required');
+       
      
         $this->form_validation->set_rules('lga', 'L.G.A', 'trim|required');
         $this->form_validation->set_rules('state', 'State', 'trim|required|min_length[3]');
@@ -127,7 +176,7 @@ class Members extends Admin_Controller
         $this->form_validation->set_rules('haddress', 'Home Address', 'trim|required|min_length[20]');
         $this->form_validation->set_rules('profession', 'Profession/Occupation', 'trim|required|min_length[3]');
         $this->form_validation->set_rules('idnumber', 'ID Number', 'trim|required|min_length[3]');
-        $this->form_validation->set_rules('nin', 'NIN', 'trim|required');
+        $this->form_validation->set_rules('nin', 'NIN', 'trim');
         $this->form_validation->set_rules('baddress', 'Business Address', 'trim|required|min_length[20]');
         $this->form_validation->set_rules('kinname', 'Next of Kin Name', 'trim|required');
         $this->form_validation->set_rules('kinaddress', 'Kin Address', 'trim|required');
@@ -141,8 +190,13 @@ class Members extends Admin_Controller
 
         if ($this->form_validation->run() == TRUE) {
             // true case
-            $password = $this->password_hash($this->input->post('password'));
-        	$data = array(
+           
+		
+		  $password = $this->password_hash($this->input->post('password'));
+
+		
+        
+			$data = array(
         	
         		
         		'firstname' => $this->input->post('fname'),
@@ -169,13 +223,15 @@ class Members extends Admin_Controller
                 'kin_phone' => $this->input->post('kinphone'),
                 'kin_address' => $this->input->post('kinaddress'),
                 'nin' => $this->input->post('nin'),
-                'account_location' => "Account_Default_Location",
+                'account_location' => "account-location",
 				'account_status' => "Pending",
 				'account_id' => $this->randomAccountID(),
 
+				'reg_status' => "pending",
 
-                'idcard_image' => "https://uploadedID.com",
-                'p_image' => "https://uploaded picture",
+
+                'idcard_image' => "offline",
+                'p_image' => "offline",
 
 				'b_account_number' => $this->input->post('b_account_number'),
 				'b_account_name' => $this->input->post('b_account_name'),
@@ -230,52 +286,67 @@ class Members extends Admin_Controller
 			$password = password_hash($pass, PASSWORD_DEFAULT);
 			return $password;
 		}
+
+		else if($pass=''){
+			$randomPassword = array_merge(range('a','z'), range('A','Z'));
+
+			shuffle($randomPassword);
+
+			$randomPassword = substr(implode($randomPassword),0,10);
+
+			$randomPassword = password_hash($randomPassword, PASSWORD_DEFAULT);
+
+		}
 	}
 
-	public function edit($id = null)
+	public function edit()
 	{
 
 		if(!in_array('updateUser', $this->permission)) {
             redirect('dashboard', 'refresh');
         }
 
-		if($id) {
+		$id = $this->uri->segment(3);
+
+
+		$this->form_validation->set_rules('groups', 'Group', 'required');
 		
-			$this->form_validation->set_rules('groups', 'Group', 'required');
-		
-			$this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email|is_unique[users.email]');
-			$this->form_validation->set_rules('password', 'Password', 'trim|required|min_length[8]');
-			$this->form_validation->set_rules('fname', 'First name', 'trim|required');
-			$this->form_validation->set_rules('lname', 'Last name', 'trim|required');
-			$this->form_validation->set_rules('mname', 'Middle name', 'trim|required');
-			$this->form_validation->set_rules('phone', 'phone', 'trim|required');
-			$this->form_validation->set_rules('aphone', 'Alt. Phone Number', 'trim|required');
-			$this->form_validation->set_rules('date', 'Date of Birth', 'trim|required');
-			$this->form_validation->set_rules('address', 'Address', 'trim|required|min_length[30]');
-			$this->form_validation->set_rules('bstop', 'Landmark', 'trim|required');
-		 
-			$this->form_validation->set_rules('lga', 'L.G.A', 'trim|required');
-			$this->form_validation->set_rules('state', 'State', 'trim|required|min_length[3]');
-			$this->form_validation->set_rules('city', 'City', 'trim|required');
-			
-			$this->form_validation->set_rules('olga', 'L.G.A of Origin', 'trim|required');
-			$this->form_validation->set_rules('ostate', 'State of Origin', 'trim|required|min_length[3]');
-			$this->form_validation->set_rules('ocity', 'City of Origin', 'trim|required');
+	//	$this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email|');
+		$this->form_validation->set_rules('password', 'Password', 'trim|required|min_length[8]');
+		$this->form_validation->set_rules('fname', 'First name', 'trim|required');
+        $this->form_validation->set_rules('lname', 'Last name', 'trim|required');
+        $this->form_validation->set_rules('mname', 'Middle name', 'trim|required');
+        $this->form_validation->set_rules('phone', 'phone', 'trim|required');
+        $this->form_validation->set_rules('aphone', 'Alt. Phone Number', 'trim|required');
+        $this->form_validation->set_rules('date', 'Date of Birth', 'trim|required');
+        $this->form_validation->set_rules('address', 'Address', 'trim|required|min_length[30]');
+       
+     
+        $this->form_validation->set_rules('lga', 'L.G.A', 'trim|required');
+        $this->form_validation->set_rules('state', 'State', 'trim|required|min_length[3]');
+        $this->form_validation->set_rules('city', 'City', 'trim|required');
+        
+        $this->form_validation->set_rules('olga', 'L.G.A of Origin', 'trim|required');
+        $this->form_validation->set_rules('ostate', 'State of Origin', 'trim|required|min_length[3]');
+        $this->form_validation->set_rules('ocity', 'City of Origin', 'trim|required');
+
+        $this->form_validation->set_rules('haddress', 'Home Address', 'trim|required|min_length[20]');
+        $this->form_validation->set_rules('profession', 'Profession/Occupation', 'trim|required|min_length[3]');
+        $this->form_validation->set_rules('idnumber', 'ID Number', 'trim|required|min_length[3]');
+        $this->form_validation->set_rules('nin', 'NIN', 'trim');
+        $this->form_validation->set_rules('baddress', 'Business Address', 'trim|required|min_length[20]');
+        $this->form_validation->set_rules('kinname', 'Next of Kin Name', 'trim|required');
+        $this->form_validation->set_rules('kinaddress', 'Kin Address', 'trim|required');
+        $this->form_validation->set_rules('kinphone', 'Kin Phone Number', 'trim|required');
+       
+        $this->form_validation->set_rules('gender', 'Gender ', 'required');
+        $this->form_validation->set_rules('mstatus', 'Marital Status', 'required');
+        $this->form_validation->set_rules('idcard', 'Valid ID Card', 'required');
 	
-			$this->form_validation->set_rules('haddress', 'Home Address', 'trim|required|min_length[20]');
-			$this->form_validation->set_rules('profession', 'Profession/Occupation', 'trim|required|min_length[20]');
-			$this->form_validation->set_rules('idnumber', 'ID Number', 'trim|required|min_length[3]');
-			$this->form_validation->set_rules('nin', 'NIN', 'trim|required');
-			$this->form_validation->set_rules('baddress', 'Business Address', 'trim|required|min_length[20]');
-			$this->form_validation->set_rules('kinname', 'Next of Kin Name', 'trim|required');
-			$this->form_validation->set_rules('kinaddress', 'Kin Address', 'trim|required');
-			$this->form_validation->set_rules('kinphone', 'Kin Phone Number', 'trim|required');
-		   
-			$this->form_validation->set_rules('gender', 'Gender ', 'required');
-			$this->form_validation->set_rules('mstatus', 'Marital Status', 'required');
-			$this->form_validation->set_rules('idcard', 'Valid ID Card', 'required');
-			 $this->form_validation->set_rules('idcard', 'Valid ID Card', 'required');
-	
+
+
+      
+
 
 
 			if ($this->form_validation->run() == TRUE) {
@@ -305,19 +376,20 @@ class Members extends Admin_Controller
 						'kin_phone' => $this->input->post('kinphone'),
 						'kin_address' => $this->input->post('kinaddress'),
 						'nin' => $this->input->post('nin'),
-						'account_location' => "Account_Default_Location",
+						'account_location' => $this->input->post('account-location'),
 		
-						'idcard_image' => "https://uploadedID.com",
-						'p_image' => "https://uploaded picture",
-
+						'idcard_image' => "offline",
+                        'p_image' => "offline",
+ 
 						'member_type' => $this->input->post('groups'),
+						'id_number' => $this->input->post('idnumber'),
 						
 					
 						
 					
 		        	);
 
-		        	$update = $this->model_members->edit($data, $id, $this->input->post('groups'));
+		        	$update = $this->model_members->edit($data, $id);
 		        	if($update == true) {
 		        		$this->session->set_flashdata('success', 'Successfully created');
 		        		redirect('members/', 'refresh');
@@ -336,11 +408,15 @@ class Members extends Admin_Controller
 						$password = $this->password_hash($this->input->post('password'));
 
 						$data = array(
+							'member_type' => $this->input->post('groups'),
+							'password' => $password,
+						    'email' => $this->input->post('email'),
+							
 							'firstname' => $this->input->post('fname'),
 							'middlename' => $this->input->post('mname'),
 							'lastname' => $this->input->post('lname'),
-							'phone' => $this->input->post('aphone'),
-							'altphone' => $this->input->post('phone'),
+							'phone' => $this->input->post('phone'),
+							'altphone' => $this->input->post('aphone'),
 							'birth_date' => $this->input->post('date'),
 							'gender' => $this->input->post('gender'),
 							'm_status' => $this->input->post('mstatus'),
@@ -353,25 +429,22 @@ class Members extends Admin_Controller
 							'origin_lga' => $this->input->post('olga'),
 							'origin_state' => $this->input->post('ostate'),
 							'id_card' => $this->input->post('idcard'),
+							'id_number' => $this->input->post('idnumber'),
 							'profession' => $this->input->post('profession'),
 							'business_address' => $this->input->post('baddress'),
 							'kin_name' => $this->input->post('kinname'),
 							'kin_phone' => $this->input->post('kinphone'),
 							'kin_address' => $this->input->post('kinaddress'),
 							'nin' => $this->input->post('nin'),
-							'account_location' => "Account_Default_Location",
-			
+							'account_location' => $this->input->post('account-location'),
+		
 							'idcard_image' => "https://uploadedID.com",
 							'p_image' => "https://uploaded picture",
-	
-							'member_type' => $this->input->post('groups'),
-							
-						
-							'password' => $password,
-							'email' => $this->input->post('email'),
+
+					
 			        	);
 
-			        	$update = $this->model_members->edit($data, $id, $this->input->post('groups'));
+			        	$update = $this->model_members->edit($data, $id);
 			        	if($update == true) {
 			        		$this->session->set_flashdata('success', 'Successfully updated');
 			        		redirect('members/', 'refresh');
@@ -398,6 +471,14 @@ class Members extends Admin_Controller
 		        }
 	        }
 	        else {
+
+				if($_SERVER['REQUEST_METHOD']=="POST"){
+					$this->session->set_flashdata('errors', 'Error occurred!!');
+				  }
+
+			
+				  // false case
+			
 	            // false case
 	        	$user_data = $this->model_members->getUserData($id);
 	        //	$groups = $this->model_users->getUserGroup($id);
@@ -412,7 +493,8 @@ class Members extends Admin_Controller
 
 				$this->render_template('members/edit', $this->data);	
 	        }	
-		}	
+		
+		
 	}
 
 	public function delete($id)
@@ -444,6 +526,220 @@ class Members extends Admin_Controller
 		}
 	}
 
+	public function activate(){
+
+		if(!$this->uri->segment(3)==null){
+
+			$member_id = $this->uri->segment(3);
+
+            $this->model_members->activate($member_id)	;
+
+			$this->data["activation_status"] = 1;
+
+			$this->data["id"] = $member_id;
+
+			$this->render_template('transactions/activation_status', $this->data);
+			
+			
+			
+		}
+
+		else{
+
+		$user_data = $this->model_members->getUserData(null,null);
+
+		$result = array();
+		foreach ($user_data as $k => $v) {
+
+			$result[$k]['user_info'] = $v;
+
+		//	$group = $this->model_users->getUserGroup($v['id']);
+		//	$result[$k]['user_group'] = $group;
+		}
+
+		$this->data['user_data'] = $result;
+ 
+		$this->render_template('members/activate', $this->data);
+
+	}
+	
+
+
+		  
+	}
+
+	public function assign_Officer(){
+
+		if($this->uri->segment(4)==null){
+
+		$user_data = $this->model_members->getUserData(null,null);
+
+		$result = array();
+		foreach ($user_data as $k => $v) {
+
+			$result[$k]['user_info'] = $v;
+
+		//	$group = $this->model_users->getUserGroup($v['id']);
+		//	$result[$k]['user_group'] = $group;
+		}
+
+		$this->data['user_data'] = $result;
+ 
+		$this->render_template('members/assign_account_manager', $this->data);
+
+	}
+
+	else{
+    
+ 
+        $member_id = $this->uri->segment(3);
+		$account_manager_id=$this->uri->segment(4);
+		$updateManager = $this->model_members->updateAccountManager($account_manager_id, $member_id);
+
+		if($updateManager==true){
+		$this->data['assign_status']=1;
+		$this->data['id']= $member_id;
+		$this->render_template('transactions/assign_status', $this->data);
+
+		}
+
+		else{
+		$this->data['assign_status']=0;
+		$this->data['id']= $member_id;
+		$this->render_template('transactions/assign_status', $this->data);
+
+		}
+
+		 
+
+	}
+
+
+		
+	}
+
+	public function confirm_pay(){
+
+		$user_data = $this->model_members->getUserData(null,null);
+
+		$id = $this->uri->segment(3);
+
+		$result = array();
+		foreach ($user_data as $k => $v) {
+
+			$result[$k]['user_info'] = $v;
+
+		//	$group = $this->model_users->getUserGroup($v['id']);
+		//	$result[$k]['user_group'] = $group;
+		}
+
+		$currentBalance = $this->model_alphasavings->getCurrentSavingsBalance($id);
+
+		$this->data['user_data'] = $result;
+		$this->data['member_id'] = $id;
+
+		if($currentBalance)
+		$this->data["savings_balance"] = $currentBalance["current_alpha_balance"] ;
+
+		else
+		$this->data["savings_balance"] = 0;
+
+		
+		$this->render_template('members/deduct_fee', $this->data);
+
+
+		  
+	}
+
+	public function direct_payment(){
+
+		$id = $this->uri->segment(3);
+		$registration_fee = 1000;
+		$timeNow = time();
+		$timeNow = date("Y-m-d H:i:s", $timeNow); 
+
+		 $newMemberData = array("member_id"=>$id, "amount_paid"=>$registration_fee, "payment_method"=>"offline", "payment_source"=>"savings","date"=> $timeNow);
+
+		 $addMember = $this->model_membership->addMember($newMemberData);
+		 if($addMember==TRUE):
+			$updateStatus = $this->model_membership->updateRegistration($id);
+
+			if($updateStatus==TRUE):
+				$updateReferrals = $this->model_referrals->updateReferrals($id);
+
+				$this->data["id"] = $id;
+
+				$this->data["activation_status"] = 1;
+
+				$this->render_template('transactions/activation_status', $this->data);
+
+			else:
+				$this->render_template('transactions/transaction_status', $this->data);
+
+		endif;
+
+	else:
+		$this->render_template('transactions/transaction_status', $this->data);
+	 endif;
+
+	
+
+
+	}
+
+
+
+	public function deduction(){
+		
+
+		$id = $this->uri->segment(3);
+
+		//Check current savings current_alpha_balance
+         
+		$currentBalance = $this->model_alphasavings->getCurrentSavingsBalance($id);
+		$registration_fee = 1000;
+		
+         if(!$currentBalance==null):
+			$currentBalance = (int)$currentBalance["current_alpha_balance"];
+		     if($currentBalance>1000):
+				$deductedBalance = $currentBalance - $registration_fee;
+
+				$timeNow = date("Y-m-d H:i:s", time()); 
+            	$newMemberData = array("member_id"=>$id, "amount_paid"=>$registration_fee, "payment_method"=>"offline", "payment_source"=>"savings","date"=> $timeNow);
+				$update = $this->model_alphasavings->setCurrentSavingsBalance($id,$deductedBalance);				
+
+				if($update==TRUE):
+					$addMember = $this->model_membership->addMember($newMemberData);
+
+			        if($addMember==TRUE):
+						$updateStatus = $this->model_membership->updateRegistration($id);
+
+						if($updateStatus==TRUE):
+							$updateReferrals = $this->model_referrals->updateReferrals($id);
+
+							$this->data["id"] = $id;
+
+							$this->data["activation_status"] = 1;
+
+							$this->render_template('transactions/activation_status', $this->data);
+
+						else:
+							$this->render_template('transactions/transaction_status', $this->data);
+
+				    endif;
+
+			     endif;
+
+	     	endif;
+
+		  endif;
+	 endif;
+                 
+
+	}
+
+     
+
 
 
 	public function profile()
@@ -459,7 +755,27 @@ class Members extends Admin_Controller
 		$member_id =  $this->uri->segment(3);
 
 		$user_data = $this->model_members->getUserData($member_id);
+		$currentAlphaSavings = $this->model_alphasavings->getCurrentAlphaPlan($member_id);
+
+		$totalReferrals = $this->model_referrals->getTotalReferrals($member_id);
+		$unpaidReferrals = $this->model_referrals->getTotalReferrals($member_id);
+
+		$verifyMembership = $this->model_membership->verifyMembership($member_id);
+
+
 		$this->data['user_data'] = $user_data;
+		$this->data['activeAlphaPlan'] = $currentAlphaSavings;
+		$this->data['totalReferrals'] = count($totalReferrals);
+		$this->data['unpaidReferrals'] = count($unpaidReferrals);
+		$this->data['verifyMembership'] = $verifyMembership;
+
+		$getAccountManager = $this->model_members->getAccountManager($user_data["account_manager"]);
+
+		if(!$getAccountManager==null)
+		$this->data['account_manager_name'] = $getAccountManager["firstname"]." ".$getAccountManager["middlename"]." ".$getAccountManager["lastname"];
+
+		else
+		$this->data['account_manager_name'] = "unavailable";
 
 		
         $this->render_template('members/member_profile', $this->data);
@@ -474,15 +790,40 @@ class Members extends Admin_Controller
         }
 
 		$user_id = $this->session->userdata('id');
-
 		$member_id =  $this->uri->segment(3);
-
 		$user_data = $this->model_members->getUserData($member_id );
-		$this->data['user_data'] = $user_data;
+		$transactions = $this->model_transactions->getUserTransactions($member_id );
+		
 
+		 //List active savings plans
+		 $listSavingsPlan = array();
+		 $listSavingsPlan = $this->model_transactions->listActivePlan($member_id );
 
-        $this->render_template('members/member_activity', $this->data);
+		 $currentAlphaSavings = $this->model_alphasavings->getCurrentAlphaPlan($member_id);
+
+		 $totalReferrals = $this->model_referrals->getTotalReferrals($member_id);
+		 $unpaidReferrals = $this->model_referrals->getTotalReferrals($member_id);
+ 
+         
+		 $verifyMembership = $this->model_membership->verifyMembership($member_id);
+		 $this->data['verifyMembership'] = $verifyMembership;
+
+ 
+		 $this->data['user_data'] = $user_data;
+		 $this->data['activeAlphaPlan'] = $currentAlphaSavings;
+		 $this->data['totalReferrals'] = count($totalReferrals);
+		 $this->data['unpaidReferrals'] = count($unpaidReferrals);
+ 
+
+		$this->data['user_data'] = $user_data;	
+		$this->data["transactions"] = $transactions;	
+		$this->data["savings_plans"]= $listSavingsPlan;
+		
+	    $this->render_template('members/member_activity', $this->data);
 	}
+
+
+	
 
 
 	public function setting()

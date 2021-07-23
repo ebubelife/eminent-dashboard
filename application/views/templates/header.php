@@ -71,5 +71,42 @@
   background-color: #dddddd;
 }
 
+
+
+  @media screen and (min-width: 768px){
+
+    #search1{
+
+     width:50% !important; position: relative; display:inline-block;
+  }
+
+  #search1-input{
+    padding:30px; 
+  }
+
+  #search1-submit{
+
+    height:63px; width:63px;
+
+  }
+
+.account-managers
+
+{  width:50% !important; position: relative; display:inline-block; 
+ 
+}
+  #account-manager-list li{
+   list-style-type: none; text-align: left; cursor: pointer;
+    
+  }
+
+  #account-manager-list li:hover{
+   color:#357ec7; text-decoration:underline;
+    
+  }
+
+  }
+
+
 </style>
 </head>

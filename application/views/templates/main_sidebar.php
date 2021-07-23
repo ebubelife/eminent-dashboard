@@ -45,7 +45,7 @@
 			  <?php }
 			   if(in_array('updateUser', $user_permission) || in_array('viewUser', $user_permission) || in_array('deleteUser', $user_permission)){ ?>
               <li class="nav-item">
-                <a href="<?php echo base_url('members/accountMAnagers');?>" class="nav-link" id="account-managers">
+                <a href="<?php echo base_url('members/accountManagers');?>" class="nav-link"  id="account-managers">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Account Managers</p>
                 </a>

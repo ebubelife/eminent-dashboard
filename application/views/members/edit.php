@@ -23,14 +23,16 @@
         <div class="col-md-12 col-xs-12">
           <?php if($this->session->flashdata('errors')){ ?>
             <div class="alert alert-danger alert-dismissible" role="alert">
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><?php echo validation_errors(); ?>
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><?php  echo validation_errors(); ?>
               
             </div>
           <?php } ?>
 
+        
+
           <div class="card">
 
-            <form role="form" action="<?php base_url('members/create') ?>" method="post">
+            <form role="form" action="<?php echo base_url('members/edit/'.$user_data["id"]) ?>" method="post">
               <div class="card-body">
 
                 
@@ -51,21 +53,51 @@
 
                  <?php if($user_data['member_type']=="manager"):  ?>
                   <option value="member" >Member</option>
-                   <option value="account_manager" selected >Account Manager</option>
+                   <option value="manager" selected >Account Manager</option>
 
                    <?php endif; ?>
 
                    <?php if($user_data['member_type']=="member"):  ?>
                   <option value="member" selected>Member</option>
-                   <option value="account_manager"  >Account Manager</option>
+                   <option value="manager"  >Account Manager</option>
 
                    <?php endif; ?>
 
-                   <option value="member" selected>Member</option>
-                   <option value="account_manager"  >Account Manager</option>
+                  
                    
                   </select>
                 </div>
+
+                
+                <!-- Account loccation -->
+
+                <div class="form-group">
+                  <label for="groups">Account Location</label>
+                  <select class="form-control" id="account-location" name="account-location" style="width:100%">
+                     
+
+                  <?php if($user_data['account_location']=="ufuma"):  ?>
+                    <option value="account_location" selected>Ufuma</option>
+                    <option value="account_location" >Asaba</option>
+                  
+
+                   <?php elseif($user_data['account_location']=="asaba"):  ?>
+                    <option value="account_location" >Ufuma</option>
+                    <option value="account_location" selected>Asaba</option>
+                  
+                    <?php else:  ?>
+                    <option value="account_location" >Ufuma</option>
+                    <option value="account_location" selected>Asaba</option>
+
+                    
+
+                   <?php endif; ?>
+
+                    
+                  
+                    
+                  </select>
+                </div><br>
 
               
 
@@ -110,18 +142,19 @@
                     <option value="male">Male</option>
                     <option value="female">Female</option>
 
-                    <?php endif; ?>
 
-                    <?php if($user_data['gender']=="female"):  ?>
+                    <?php elseif($user_data['gender']=="female"):  ?>
 
                       <option value="female">Female</option>
                     <option value="male">Male</option>
                  
+                    <?php else:  ?>
+                    <option value="female">Female</option>
+                    <option value="male">Male</option>
 
                     <?php endif; ?>
 
-                    <option value="female">Female</option>
-                    <option value="male">Male</option>
+                  
                     
                   </select>
                 </div>
@@ -129,6 +162,11 @@
                 <div class="form-group"> <!-- Date input -->
                   <label class="control-label" for="date">Date of Birth</label>
                     <input class="form-control" id="date" name="date" value="<?php echo $user_data['birth_date'] ?>" placeholder="MM/DD/YYY" type="date"/>
+                </div>
+
+                <div class="form-group"> <!-- Date input -->
+                  <label class="control-label" for="date_of_reg">Date of Registration</label>
+                    <input class="form-control" id="date_of_reg" value="<?php echo $user_data['date_of_registration'] ?>" name="date_of_reg" placeholder="MM/DD/YYY" type="date" required/>
                 </div>
 
                 <div class="form-group">
@@ -151,16 +189,23 @@
                     <option value="single">Single</option>
                     <option value="divorced">Divorced</option>
 
-                    <?php endif ?>
-
-                    <?php if($user_data['m_status']=="divorced"):  ?>
+                    <?php elseif($user_data['m_status']=="divorced"):  ?>
                     
                     <option value="divorced">Divorced</option>
                     <option value="married">Married</option>
                    <option value="single">Single</option>
+
+                   <?php else:  ?>
+                    
+                    <option value="divorced">Divorced</option>
+                    <option value="married">Married</option>
+                   <option value="single">Single</option>
+
+                    <?php endif ?>
+
+                   
                  
 
-                  <?php endif ?>
                     
                   </select>`
                 </div>
@@ -169,10 +214,7 @@
                   <label for="address">Residential Address</label>
                   <input type="text" class="form-control" id="address" value="<?php echo $user_data['residence_address'] ?>" name="address" placeholder="Address" autocomplete="off">
                 </div>
-                <div class="form-group">
-                  <label for="landmark">Landmark (Nearby Bus stop)</label>
-                  <input type="text" class="form-control" id="bstop" name="bstop" value="<?php echo "Landmark" ?>" placeholder="A-B Bustop, Ageri Street" autocomplete="off">
-                </div>
+               
                 <div class="form-group">
                   <label for="city">City of Residence</label>
                   <input type="text" class="form-control" id="city" name="city" value="<?php echo $user_data['residence_city'] ?>" placeholder="City" autocomplete="off">
@@ -223,7 +265,7 @@
 
                 <div class="form-group">
                   <label for="idnumber">ID Card Number</label>
-                  <input type="text" class="form-control" id="idnumber" name="idnumber" value="<?php echo $user_data['id_card'] ?>" placeholder="ID Card Number" autocomplete="off">
+                  <input type="text" class="form-control" id="idnumber" name="idnumber" value="<?php echo $user_data['id_number'] ?>" placeholder="ID Card Number" autocomplete="off">
                 </div>
 
                 <div class="form-group">
@@ -265,6 +307,25 @@
                     <input type="text" class="form-control" id="kinaddress"  value="<?php echo $user_data['kin_address'] ?>" name="kinaddress" placeholder="Next of Kin Address" autocomplete="off">
                   </div>
 
+                  <h3 style="color:orange">Bank Account Details</h3>
+
+                <div class="form-group">
+                  <label for="profession">Bank Account Number</label>
+                  <input type="text" class="form-control" id="b_account_number" value="<?php echo $user_data['b_account_number']; ?>" name="b_account_number" placeholder="Bank Account NUmber" autocomplete="off" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="profession">Name On Bank Account</label>
+                  <input type="text" class="form-control" id="b_account_name" value="<?php echo $user_data['b_account_name']; ?>" name="b_account_name" placeholder="Name On Bank Account" autocomplete="off" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="profession">Bank</label>
+                  <input type="text" class="form-control" id="bank" value="<?php echo $user_data['bank']; ?>" name="bank" placeholder="Bank" autocomplete="off" required>
+                </div>
+
+                <h3 style="color:orange">Set Account Login</h3>
+
                 <div class="form-group">
                   <label for="email">Email</label>
                   <input type="email" class="form-control" id="email" name="email" value="<?php echo $user_data['email'] ?>" placeholder="Email" autocomplete="off">
@@ -277,7 +338,7 @@
 
                 <div class="form-group">
                   <label for="password">User password</label>
-                  <input type="password" class="form-control" id="password" value="<?php echo $user_data['firstname'] ?>" name="password" placeholder="Password" autocomplete="off">
+                  <input type="password" class="form-control" id="password" value="xxxx" name="password" placeholder="Password" autocomplete="off">
                 </div>
 
                 

@@ -5,12 +5,12 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1 class="m-0 text-dark">Account Managers</h1>
+            <h1 class="m-0 text-dark">Account Officers</h1>
           </div><!-- /.col -->
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
               <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">Account Managers</li>
+              <li class="breadcrumb-item active">Account Officers</li>
             </ol>
           </div><!-- /.col -->
         </div><!-- /.row -->
@@ -35,8 +35,14 @@
             </div>
           <?php endif; ?>
           
+         
+            <a href="<?php echo base_url('members/create') ?>" class="btn btn-primary">Assign role</a>
+            <a href="<?php echo base_url('members/manage/ufuma') ?>" class="btn btn-success">Managers Ufuma</a>
+            <a href="<?php echo base_url('members/manage/asaba') ?>" class="btn btn-warning">Managers Asaba</a>
+            <a href="<?php echo base_url('members/manage') ?>" class="btn btn-default">All Managers</a>
+          <!--  <a href="<?php //echo base_url('members/manage/pending') ?>" class="btn btn-danger">Pending</a>-->
+             <br><br>
        
-
     
 
 
@@ -60,6 +66,7 @@
                 <table id="userTable" class="table table-hover text-nowrap">
                   <thead>
                 <tr>
+                  <th>Actions</th>
                   <th>Full Name</th>
                   <th>Phone</th>
                   <th>Alt. Phone</th>
@@ -69,12 +76,17 @@
                   <th>Gender</th>
                   <th>Marital Status</th>
                   <th>Profession</th>
+                  <th>Bank Acc Name</th>
+                  <th>Bank Acc Num</th>
+                  <th>Bank</th>
+                 
                   <th>Kin - Name</th>
                   <th>Kin - Phone</th>
                   <th>Kin - Address</th>
+                  
                   <th>NIN</th>
                   <th>Account - Location</th>
-                  <th>Account - ID </th>
+                 
                   <th>Residential Addr</th>
                   <th>Business Addr</th>
                   <th>Origin Addr</th>
@@ -84,68 +96,71 @@
                   <th>City - Residence</th>
                   <th>L.G.A - Residence</th>
                   <th>State - Residence</th>
+                  <th>Date Of Registration</th>
                   
-                  
+                  <th>Mode Of Registration</th>
                   <th>Membership Type</th>
-                  <th>Account Manager</th>
-                  
+                 
 
 
-
-                  <?php if(in_array('updateUser', $user_permission) || in_array('deleteUser', $user_permission)): ?>
-                  <th>Action</th>
-                  <?php endif; ?>
                 </tr>
                 </thead>
                   <tbody>
                   <?php if($user_data): ?>                  
                     <?php foreach ($user_data as $k => $v): ?>
                       <tr>
+
+                      <?php if(in_array('updateUser', $user_permission) || in_array('deleteUser', $user_permission)): ?>
+
+<td>
+  <?php if(in_array('updateUser', $user_permission)): ?>
+    <a href="<?php echo base_url('members/edit/'.$v['user_info']['id']) ?>" class="btn btn-default"><i class="fa fa-edit"></i></a>
+  <?php endif; ?>
+  <?php if(in_array('deleteUser', $user_permission)): ?>
+      <!--<a href="<?php// echo base_url('users/delete/'.$this->atri->en($v['user_info']['id'])) ?>" class="btn btn-default" role="button" disabled = "disable"><i class="fa fa-trash"></i></a>-->
+  <?php endif; ?>
+
+ 
+    <a href="<?php echo base_url('members/profile/'.$v['user_info']['id'].'/'.$this->atri->en($v['user_info']['id'])) ?>" class="btn btn-default"><i class="fa fa-eye"></i></a>
+
+</td>
+<?php endif; ?>
                         <td><?php echo $v['user_info']['firstname']." ".$v['user_info']['middlename']." ".$v['user_info']['lastname'];?></td>
                         <td><?php echo $v['user_info']['phone']; ?></td>
-                        <td><?php echo $v['user_info']['altphone'] .' '. $v['user_info']['lastname']; ?></td>
+                        <td><?php echo $v['user_info']['altphone'] ; ?></td>
                         <td><?php echo $v['user_info']['email']; ?></td>
                         <td><?php echo  $v['user_info']['birth_date']; ?></td>
-                        <td><?php echo  $v['user_info']['gender']; ?></td>
+                        <td><?php echo  $v['user_info']['account_id']; ?></td>
+                        <td><?php echo $v['user_info']['gender']; ?></td>
                         <td><?php echo $v['user_info']['m_status']; ?></td>
                         <td><?php echo $v['user_info']['profession']; ?></td>
+                        <td><?php echo $v['user_info']['b_account_name']; ?></td>
+                        <td><?php echo $v['user_info']['b_account_number']; ?></td>
+                        <td><?php echo $v['user_info']['bank']; ?></td>
                         <td><?php echo $v['user_info']['kin_name'] .' '. $v['user_info']['lastname']; ?></td>
                         <td><?php echo $v['user_info']['kin_phone']; ?></td>
                         <td><?php echo $v['user_info']['kin_address']; ?></td>
-                        <td><?php echo $v['user_info']['account_id']; ?></td>
-                        <td><?php echo "232323" ?></td>
+                        
                         <td><?php echo $v['user_info']['nin']; ?></td>
+                        <td><?php echo $v['user_info']['account_location']; ?></td>
                        
 
 
-                        <td><?php echo $v['user_info']['firstname'] .' '. $v['user_info']['lastname']; ?></td>
-                        <td><?php echo $v['user_info']['phone']; ?></td>
-                        <td><?php echo "Member"; ?></td>
-                        <td><?php echo "Member"; ?></td>
-                        <td><?php echo "Ebube Emeka Life"?></td>
-                        <td><?php echo $v['user_info']['email']; ?></td>
-                        <td><?php echo $v['user_info']['firstname'] .' '. $v['user_info']['lastname']; ?></td>
-                        <td><?php echo $v['user_info']['phone']; ?></td>
-                        <td><?php echo "Member"; ?></td>
-                        <td><?php echo "Member"; ?></td>
-                        <td><?php echo "Member"; ?></td>
-                        <td><?php echo "Member"; ?></td>
-
-                        <?php if(in_array('updateUser', $user_permission) || in_array('deleteUser', $user_permission)): ?>
-
-                        <td>
-                          <?php if(in_array('updateUser', $user_permission)): ?>
-                            <a href="<?php echo base_url('users/edit/'.$v['user_info']['id']) ?>" class="btn btn-default"><i class="fa fa-edit"></i></a>
-                          <?php endif; ?>
-                          <?php if(in_array('deleteUser', $user_permission)): ?>
-                            <a href="<?php echo base_url('users/delete/'.$this->atri->en($v['user_info']['id'])) ?>" class="btn btn-default"><i class="fa fa-trash"></i></a>
-                          <?php endif; ?>
-
-                          <?php if(in_array('updateUser', $user_permission)): ?>
-                            <a href="<?php echo base_url('users/delete/'.$this->atri->en($v['user_info']['id'])) ?>" class="btn btn-default"><i class="fa fa-eye"></i></a>
-                          <?php endif; ?>
-                        </td>
-                      <?php endif; ?>
+              
+                        <td><?php echo $v['user_info']['residence_address']; ?></td>
+                        <td><?php echo  $v['user_info']['business_address']; ?></td>
+                        <td><?php echo  $v['user_info']['origin_address']; ?></td>
+                        <td><?php echo $v['user_info']['origin_city'];?></td>
+                        <td><?php echo $v['user_info']['origin_lga']; ?></td>
+                        <td><?php echo $v['user_info']['origin_state']; ?></td>
+                        <td><?php echo $v['user_info']['residence_city']; ?></td>
+                        <td><?php echo $v['user_info']['residence_lga']; ?></td>
+                        <td><?php echo $v['user_info']['residence_state']; ?></td>
+                        <td><?php echo $v['user_info']['date_of_registration'] ?></td>
+                        <td><?php echo $v['user_info']['mode_of_reg']; ?></td>
+                        <td><?php echo $v['user_info']['member_type']; ?></td>
+                     
+                       
                       </tr>
                     <?php endforeach ?>
                   <?php endif; ?>

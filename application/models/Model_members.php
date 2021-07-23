@@ -190,7 +190,7 @@ if ($this->db->table_exists('members') )
     public function getUserData($userId = null,$var=null) 
 	{
 		if($userId) {
-			$sql = "SELECT * FROM members WHERE id = ?";
+			$sql = "SELECT * FROM members WHERE id = ?  ";
 			$query = $this->db->query($sql, array($userId));
 			return $query->row_array();
 		}
@@ -224,24 +224,66 @@ if ($this->db->table_exists('members') )
 
 
 
-  public function getManagers($userId = null){
-    if($userId) {
-      $sql = "SELECT * FROM members WHERE id = ?";
-      $query = $this->db->query($sql, array($userId));
-      return $query->row_array();
-    }
-  
-    $sql = "SELECT * FROM members WHERE id != ? AND member_type ='Account Manager' ORDER BY id DESC";
-    $query = $this->db->query($sql, array(1));
+  public function getManagers($matchText=null ){
+   
+    if(!$matchText){
+    $sql = "SELECT * FROM members WHERE member_type ='manager' ORDER BY id DESC";
+    $query = $this->db->query($sql);
     return $query->result_array();
+
+    }
+
+    elseif($matchText){
+      $sql = "SELECT * FROM members WHERE (firstname LIKE '%$matchText%' OR lastname LIKE '%$matchText%' OR middlename LIKE '%$matchText%') AND member_type ='manager' ";
+      $query = $this->db->query($sql);
+      if($query){
+        
+      $result = $query->result_array();     
+      return $result;
+
+      }
+    }
+
+    
+
   }
 
 
 
-  public function edit($data = array(), $id = null, $group_id = null)
+  
+
+  public  function getAccountManager($account_manager_id){
+
+    $sql = "SELECT * FROM members WHERE id = ?";
+    $query = $this->db->query($sql, array($account_manager_id));
+
+    return $query->row_array();
+
+
+  }
+
+  public  function updateAccountManager($account_manager_id, $member_id){
+
+    $sql = "UPDATE members SET account_manager = $account_manager_id WHERE id=?";
+    $query = $this->db->query($sql, array($member_id));
+
+    if($query)
+    {return true;}
+    else{
+      return false;
+    }
+
+
+  }
+
+  
+
+
+
+  public function edit($data = array(), $id )
 {
   $this->db->where('id', $id);
-  $update = $this->db->update('users', $data);
+  $update = $this->db->update('members', $data);
 
  /* if($group_id) {
     // user group
@@ -251,7 +293,47 @@ if ($this->db->table_exists('members') )
     return ($update == true && $user_group == true) ? true : false;	
   }
     */
-  return ($update == true) ? true : false;	
+
+
+  if($update){
+    return true;
+
+  }
+
+  else{
+    return false;
+
+  }
+}
+
+public function activate($id){
+  $timeNow = time();
+  $timeNow = date("Y-m-d H:i:s", $timeNow); 
+
+  $memberData = array("member_id"=>$id, "amount_paid"=>1000, "payment_method"=>"offline","payment_source"=>"direct","date"=>$timeNow);
+
+  $sql1 = "UPDATE members SET reg_status = 'complete', account_status = 'active' WHERE id= ? ";
+     $query1 = $this->db->query($sql1, array($id));
+     
+
+   
+  $sql2 = "SELECT * FROM membership_list WHERE member_id = ?";
+    $query2 = $this->db->query($sql2, array($id));
+
+      if($query1):
+          if($query2):
+            $result = $query2->row_array();
+
+            if($result==null):
+              $addNewMember = $this->db->insert('membership_list',  $memberData);
+
+            endif;                
+          
+          else:
+           return FALSE;
+
+          endif;
+        endif;
 }
 
 

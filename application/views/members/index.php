@@ -100,7 +100,7 @@
                   
                   <th>Mode Of Registration</th>
                   <th>Membership Type</th>
-                  <th>Account Manager</th>
+                 
                   
 
 
@@ -119,7 +119,7 @@
     <a href="<?php echo base_url('members/edit/'.$v['user_info']['id']) ?>" class="btn btn-default"><i class="fa fa-edit"></i></a>
   <?php endif; ?>
   <?php if(in_array('deleteUser', $user_permission)): ?>
-    <a href="<?php echo base_url('users/delete/'.$this->atri->en($v['user_info']['id'])) ?>" class="btn btn-default"><i class="fa fa-trash"></i></a>
+    <!--<a href="<?php// echo base_url('users/delete/'.$this->atri->en($v['user_info']['id'])) ?>" class="btn btn-default" role="button" disabled = "disable"><i class="fa fa-trash"></i></a>-->
   <?php endif; ?>
 
  
@@ -160,8 +160,8 @@
                         <td><?php echo $v['user_info']['residence_state']; ?></td>
                         <td><?php echo $v['user_info']['date_of_registration'] ?></td>
                         <td><?php echo $v['user_info']['mode_of_reg']; ?></td>
-                        <td><?php echo "Member"; ?></td>
-                        <td><?php echo "Okike Charles"; ?></td>
+                        <td><?php echo $v['user_info']['member_type']; ?></td>
+                     
 
                        
                       </tr>
