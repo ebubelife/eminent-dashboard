@@ -7,6 +7,8 @@ class Members extends Admin_Controller
 		parent::__construct();
 
 		$this->not_logged_in();
+
+		$this->editPlan();
 		
 		$this->data['page_title'] = 'Users';
 		
@@ -22,6 +24,10 @@ class Members extends Admin_Controller
 	}
 	public function index(){
 		redirect('members/manage', 'refresh');
+	}
+
+	public function regForm(){
+		$this->load->view('regform');
 	}
 
 
@@ -319,6 +325,7 @@ class Members extends Admin_Controller
         $this->form_validation->set_rules('phone', 'phone', 'trim|required');
         $this->form_validation->set_rules('aphone', 'Alt. Phone Number', 'trim|required');
         $this->form_validation->set_rules('date', 'Date of Birth', 'trim|required');
+		$this->form_validation->set_rules('date_of_reg', 'Date of Registration', 'trim|required');
         $this->form_validation->set_rules('address', 'Address', 'trim|required|min_length[30]');
        
      
@@ -377,6 +384,7 @@ class Members extends Admin_Controller
 						'kin_address' => $this->input->post('kinaddress'),
 						'nin' => $this->input->post('nin'),
 						'account_location' => $this->input->post('account-location'),
+						'date_of_registration' => $this->input->post('date_of_reg'),
 		
 						'idcard_image' => "offline",
                         'p_image' => "offline",
@@ -437,6 +445,8 @@ class Members extends Admin_Controller
 							'kin_address' => $this->input->post('kinaddress'),
 							'nin' => $this->input->post('nin'),
 							'account_location' => $this->input->post('account-location'),
+							'date_of_registration' => $this->input->post('date_of_reg'),
+		
 		
 							'idcard_image' => "https://uploadedID.com",
 							'p_image' => "https://uploaded picture",
@@ -738,6 +748,10 @@ class Members extends Admin_Controller
 
 	}
 
+	public function endSavings($id){
+
+	}
+
      
 
 
@@ -781,6 +795,78 @@ class Members extends Admin_Controller
         $this->render_template('members/member_profile', $this->data);
 	}
 
+	public function downlines(){
+		if(!in_array('viewProfile', $this->permission)) {
+            redirect('dashboard', 'refresh');
+        }
+
+		$user_id = $this->session->userdata('id');
+		$member_id =  $this->uri->segment(3);
+		$user_data = $this->model_members->getUserData($member_id );
+		$this->data['user_data'] = $user_data;
+	
+        
+		  if(!$this->uri->segment(3)==null){
+		$user_data = $this->model_members->getDownlines($this->uri->segment(3));
+		$result = array();
+		foreach ($user_data as $k => $v) {
+
+			$result[$k]['user_info'] = $v;
+
+		//	$group = $this->model_users->getUserGroup($v['id']);
+		//	$result[$k]['user_group'] = $group;
+
+		     $alphaDetails = $this->model_alphasavings->getCurrentAlphaPlan($v['id']);
+			 $result[$k]['downline_alpha_details'] =  $alphaDetails;
+		}
+
+		$this->data['downline_data'] = $result;
+		$this->render_template('members/downlines', $this->data);
+
+
+	}
+}
+
+public function downline_data(){
+	if(!in_array('viewProfile', $this->permission)) {
+		redirect('dashboard', 'refresh');
+	}
+
+	$user_id = $this->session->userdata('id');
+	$member_id =  $this->uri->segment(3);
+	$user_data = $this->model_members->getUserData($member_id );
+	$this->data['user_data'] = $user_data;
+
+	
+	  if(!$this->uri->segment(3)==null){
+	$user_data = $this->model_members->getDownlines($this->uri->segment(3));
+	$result = array();
+	foreach ($user_data as $k => $v) {
+
+		$result[$k]['user_info'] = $v;
+
+	//	$group = $this->model_users->getUserGroup($v['id']);
+	//	$result[$k]['user_group'] = $group;
+
+		
+	}
+	$alphaDetails = $this->model_alphasavings->getCurrentAlphaPlan($this->uri->segment(3));
+	$this->data['downline_alpha_details'] =  $alphaDetails;
+
+	$this->data['downline_data'] = $result;
+
+	$this->render_template('members/downline_transactions', $this->data);
+
+
+}
+}
+
+
+
+	//Commissions payments on savings
+
+	
+
 
 	public function memberActivity()
 	{
@@ -821,6 +907,7 @@ class Members extends Admin_Controller
 		
 	    $this->render_template('members/member_activity', $this->data);
 	}
+
 
 
 	

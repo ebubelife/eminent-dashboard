@@ -8,6 +8,17 @@ class Model_transactions extends CI_Model{
       
 	}
 
+    public function updateActivity($data){
+        $create = $this->db->insert('member_activity', $data);
+
+        if($create)
+            return TRUE;
+        else
+            return FALSE;
+      
+
+    }
+
     public function newTransaction($data){
         $create = $this->db->insert('transactions', $data);
 
@@ -31,9 +42,26 @@ class Model_transactions extends CI_Model{
 
     }
 
+    public function addSavingsPlanCommission($data){
+
+
+        $alpha_data = array("member_id"=>$data["member_id"],"savings_id"=>$data["savings_id"]);
+         $create = $this->db->insert('alpha_commissions',  $alpha_data);
+         $create = $this->db->insert('alpha_commissions_amt',  $alpha_data);
+         $create = $this->db->insert('alpha_savings_amt',  $alpha_data);
+    
+ 
+       
+    }
+
     public function addNewAlphaSavings($data){
-        
+     
+    
+     
+
         $create = $this->db->insert('alpha_savings_members', $data);
+
+
 
 
     }

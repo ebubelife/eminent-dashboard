@@ -336,6 +336,14 @@ public function activate($id){
         endif;
 }
 
+public function getDownlines($account_manager_id){
+
+    $sql = "SELECT * FROM members WHERE account_manager =?";
+		$query = $this->db->query($sql, array($account_manager_id));
+		return $query->result_array();
+
+}
+
 
 }
 

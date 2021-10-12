@@ -30,7 +30,6 @@ class Transactions extends Admin_Controller {
 
         $timeNow = time();
         $timeNow = date("Y-m-d H:i:s", $timeNow); 
-
         $member_id =  $this->uri->segment(3);
         
         $data = array("date"=>$timeNow,
@@ -52,10 +51,6 @@ class Transactions extends Admin_Controller {
             if ($this->form_validation->run() == FALSE) {
 
                 $this->session->set_flashdata('errors','Could not validate form'); 
-
-             //   redirect('members/memberActivity/'.$member_id, 'refresh');
-
-    
                 $user_data = $this->model_members->getUserData($member_id );
                 $this->data['user_data'] = $user_data;
                 $this->render_template('members/member_activity', $this->data);
@@ -67,7 +62,6 @@ class Transactions extends Admin_Controller {
 
             
                 $this->session->set_userdata("my_form_values",$data);
-              
                 $this->confirm($data);
 
             }
@@ -91,6 +85,12 @@ class Transactions extends Admin_Controller {
                     {
                         
                     $updateSavings = $this->model_transactions->addNewAlphaSavings($data1);
+                    $getCurrentAlphaPlan = $this->model_alphasavings->getCurrentAlphaPlan($member_id);
+
+                    $currentAlphaPlanID =  $getCurrentAlphaPlan["id"];
+
+                    $data1["savings_id"] =   $currentAlphaPlanID;
+                    $updateSavingsCommissions = $this->model_transactions-> addSavingsPlanCommission($data1);
                     }
                         
                             else{
@@ -103,6 +103,9 @@ class Transactions extends Admin_Controller {
 
 
                             if($newTransaction==TRUE ){
+
+                                $activityData = array("member_id"=>$member_id, "description"=>"<b>#200 deposited</b> into <b>Alpha One Month</b>, for member - George Clipart", "transaction_id"=>16,"date"=>time(), "manager"=>7 );
+                                $this->model_transactions->updateActivity($activityData);
     
                              $this->status($data);
                                 
@@ -217,6 +220,8 @@ class Transactions extends Admin_Controller {
           
 
     }
+
+    
 
    
 

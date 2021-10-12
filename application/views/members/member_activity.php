@@ -279,6 +279,7 @@ else{echo "₦0";}
                   <th>Date</th>
                   <th>Transaction Type</th>
                   <th>Details</th>
+                  <th>Channel</th>
                   <th>Amount</th>
                 </tr>
                <thead>

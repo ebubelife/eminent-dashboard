@@ -15,6 +15,7 @@ class Alpha extends Admin_Controller {
 		$this->load->model('model_groups');
 		$this->load->model('model_stores');
         $this->load->model('model_members');
+		$this->load->model('model_alphasavings');
 	}
 
     public function alphaOne(){
@@ -214,6 +215,16 @@ class Alpha extends Admin_Controller {
 		$this->render_template('savings/alpha/withdrawals', $this->data);
 
     }
+
+
+
+
+/******************************************************************************************************** */
+
+
+
+
+	
 
 
 }

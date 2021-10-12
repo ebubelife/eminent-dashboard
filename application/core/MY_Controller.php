@@ -17,6 +17,15 @@ class Admin_Controller extends MY_Controller
 	{
 		parent::__construct();
 
+		$this->load->model('model_users');
+		$this->load->model('model_groups');
+		$this->load->model('model_stores');
+        $this->load->model('model_members');
+		$this->load->model('model_transactions');
+		$this->load->model('model_alphasavings');
+		$this->load->model('model_referrals');
+		$this->load->model('model_membership');
+
 		$group_data = array();
 		if(empty($this->session->userdata('logged_in'))) {
 			$session_data = array('logged_in' => FALSE);
@@ -31,7 +40,266 @@ class Admin_Controller extends MY_Controller
 
 			$this->permission = unserialize($group_data['permission']);
 		}
+
+		
 	}
+
+
+
+
+	
+
+
+
+public function editPlan(){
+
+  $getAccountManagers =  $this->model_members->getManagers(null);
+  $currentUpaidMonth = "";
+
+    $result = array();
+		foreach ( $getAccountManagers as $k => $v) {
+
+			$result[$k]['user_info'] = $v;
+			$userID = $result[$k]['user_info']["id"];
+			$downlines = $this->model_members->getDownlines($userID);
+
+			$downlineResult = array();
+			
+			foreach ($downlines as $k => $v) {
+
+				$downlineResult[$k]['user_info'] = $v;
+				$downlineID = $downlineResult[$k]['user_info']["id"];
+
+				$alphaDetails = $this->model_alphasavings->getCurrentAlphaPlan($downlineID );
+				//Get user data
+
+				$user_data = $this->model_members->getUserData($downlineID);
+
+				if(!$alphaDetails==null){
+
+				$commission_yield_count = $user_data["comm_yield_count"];
+				$total_commissions_earned = $user_data["comm_yield"];
+				$last_commission = $user_data["last_paid_comm"];
+
+                
+				$activePlanID = $alphaDetails["id"];
+				$joinDate = new DateTime($alphaDetails["join_date"]);
+				$endDate = strtotime($alphaDetails["end_date"]);
+				$today = new DateTime(date('Y-m-d H:i:s',time()));
+
+				$commission_percentage =0;
+				$current_comm_yield = 0;
+				$interval = $joinDate->diff($today);
+
+				$diffInMonths  = $interval->m; 
+
+				$currentUpaidMonth="first_month";
+
+				
+				
+
+			    if($diffInMonths == 1){
+					$currentUpaidMonth = "first_month";
+
+				}
+
+				else if($diffInMonths == 2){
+					$currentUpaidMonth = "second_month";
+
+				}
+
+				else if($diffInMonths == 3){
+					$currentUpaidMonth = "third_month";
+
+				}
+
+				else if($diffInMonths == 4){
+					$currentUpaidMonth = "fourth_month";
+
+				}
+				else if($diffInMonths == 5){
+					$currentUpaidMonth = "fifth_month";
+
+				}
+
+				else if($diffInMonths == 6){
+					$currentUpaidMonth = "sixth_month";
+
+				}
+
+				else if($diffInMonths == 7){
+					$currentUpaidMonth = "seventh_month";
+
+				}
+
+				else if($diffInMonths == 8){
+					$currentUpaidMonth = "eight_month";
+
+				}
+
+				else if($diffInMonths == 9){
+					$currentUpaidMonth = "ninth_month";
+
+				}
+
+				else if($diffInMonths == 10){
+					$currentUpaidMonth = "tenth_month";
+
+				}
+
+				else if($diffInMonths == 11){
+					$currentUpaidMonth = "eleventh_month";
+
+				}
+
+				else if($diffInMonths == 12){
+					$currentUpaidMonth = "twelfth_month";
+
+				}
+				
+
+				
+
+				if($endDate < time()){
+				$this->model_alphasavings->expire_plan($activePlanID);
+
+				}
+
+				//Pay commissions and finalise savings records
+
+				if($alphaDetails["savings_plan"]=="alpha1"){
+
+					
+
+
+					$currentSavingsID = $alphaDetails["id"];
+					$memberID = $alphaDetails["member_id"];
+
+				
+					$total_savings = $alphaDetails["current_alpha_balance"];
+					$deducted_company_commission = (3 * $total_savings )/100;
+
+					$agent_commissions  = 0;
+		
+
+					
+					if($commission_yield_count<10){
+
+						if (floor($last_commission) == $last_commission){
+
+							$commission_percentage = 10 - $commission_yield_count;
+					
+								$agent_commissions = ($commission_percentage * $deducted_company_commission)/100;
+
+						}
+
+						else{
+
+							$current_comm_yield = 0.5 - $last_commission;
+
+							$current_comm_yield = $current_comm_yield / 0.05;
+
+							$current_comm_yield = $current_comm_yield + 1;
+
+							$commission_percentage = 10 - $current_comm_yield;
+
+						
+
+
+							$agent_commissions = ($commission_percentage * $deducted_company_commission)/100;
+
+
+							
+
+
+						}
+
+
+					}
+
+					
+					$data = array("member_id"=>$memberID, "current_comm_percentage"=>$agent_commissions_percentage, "savings_id"=>$currentSavingsID, "curr_month"=>$diffInMonths+1, "agent_commission"=>$agent_commissions, "current_unpaid_month"=>$currentUpaidMonth);
+
+					$this->model_alphasavings->expire_alpha_commission($data);
+
+					
+				}
+
+				else{
+
+					
+
+					$currentSavingsID = $alphaDetails["id"];
+					$memberID = $alphaDetails["member_id"];
+					$total_savings = $alphaDetails["current_alpha_balance"];
+
+					$deducted_company_commission = (3 * 100) / $total_savings;
+					$agent_commissions = 0; 
+					
+					$agent_commissions_percentage = 0;
+
+				
+				
+
+					if($commission_yield_count<10){
+						//verify the previous commission earned
+						if (floor($last_commission) == $last_commission){
+
+							$current_comm_yield =  10 - $commission_yield_count ;
+							$current_comm_yield = $current_comm_yield * 0.05;
+
+							$current_comm_yield= 10 - $commission_yield_count;
+
+							$agent_commissions_percentage = $current_comm_yield * 0.05;
+
+							$agent_commissions = ($agent_commissions_percentage * $total_savings)/100;
+
+
+						}
+						else{
+							
+							$agent_commissions_percentage = $last_commission - 0.05 ;
+							
+                            $agent_commissions = ($agent_commissions_percentage * $total_savings)/100;
+
+						}
+
+					}
+
+				
+					if(!$diffInMonths == 0){
+
+						$data = array("member_id"=>$memberID, "current_comm_percentage"=>$agent_commissions_percentage, "savings_id"=>$currentSavingsID, "curr_month"=>$diffInMonths+1, "agent_commission"=>$agent_commissions, "current_unpaid_month"=>$currentUpaidMonth);
+
+					$this->model_alphasavings->expire_alpha_commission($data);
+
+					}
+
+		
+					
+
+				
+
+
+				}
+
+		
+				}
+
+			
+
+			}
+
+	
+		}
+
+	
+
+
+	
+}
+
+
 
 	public function logged_in()
 	{

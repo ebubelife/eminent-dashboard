@@ -45,7 +45,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
             <a href="<?php echo base_url('members/memberActivity/'.$user_data['id']); ?>"><button class="btn btn-default" id="deactivate-btn" role="button">Account Activity</button></a>
          
           <?php if($user_data['member_type']=='manager'){ ?> 
-          <a href="<?php echo base_url('members/memberActivity/'.$user_data['id']); ?>"><button class="btn btn-default" id="deactivate-btn" role="button">View Managed Accounts</button></a>
+          <a href="<?php echo base_url('members/downlines/'.$user_data['id']); ?>"><button class="btn btn-default" id="deactivate-btn" role="button">View Managed Accounts</button></a>
           <?php }?>
             
          

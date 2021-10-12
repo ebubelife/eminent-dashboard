@@ -107,6 +107,14 @@
 
   }
 
+  .downlines tr:nth-child(even) {
+  background-color: #dddddd;
+}
+
+.table-transactions tr:nth-child(even) {
+  background-color: #dddddd;
+}
+
 
 </style>
 </head>
