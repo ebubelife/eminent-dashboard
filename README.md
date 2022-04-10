@@ -1,2 +1,2 @@
 # eminent-dashboard
-Repository for eminent cooperative dashboard software
+Repository for cooperative savings dashboard software
